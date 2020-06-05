@@ -268,6 +268,11 @@ export interface GraphOptions {
    * Edge 是否连接到节点中间
    */
   linkCenter?: boolean;
+
+  /**
+   * redo & undo 最大步数
+   */
+  maxStep?: number;
 }
 
 interface StateStyles {
