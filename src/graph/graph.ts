@@ -3,14 +3,8 @@ import { IGroup } from '@antv/g-base/lib/interfaces';
 import { BBox, Point } from '@antv/g-base/lib/types';
 import GCanvas from '@antv/g-canvas/lib/canvas';
 import GSVGCanvas from '@antv/g-svg/lib/canvas';
-import Group from '@antv/g-canvas/lib/group';
 import { mat3 } from '@antv/matrix-util/lib';
-import clone from '@antv/util/lib/clone';
-import deepMix from '@antv/util/lib/deep-mix';
-import each from '@antv/util/lib/each';
-import isPlainObject from '@antv/util/lib/is-plain-object';
-import isString from '@antv/util/lib/is-string';
-import isNumber from '@antv/util/lib/is-number';
+import { clone, deepMix, each, isPlainObject, isString, isNumber } from '@antv/util'
 import { IGraph } from '../interface/graph';
 import { IEdge, INode, ICombo } from '../interface/item';
 import {
@@ -50,11 +44,9 @@ import PluginBase from '../plugins/base';
 import createDom from '@antv/dom-util/lib/create-dom';
 import { plainCombosToTrees, traverseTree, reconstructTree, traverseTreeUp } from '../util/graphic';
 import Stack from '../algorithm/structs/stack'
-import { isBoolean } from '_@antv_util@2.0.9@@antv/util/lib';
 
 const NODE = 'node';
 const SVG = 'svg';
-const CANVAS = 'canvas';
 
 interface IGroupBBox {
   [key: string]: BBox;
@@ -564,7 +556,7 @@ export default class Graph extends EventEmitter implements IGraph {
    * @param dy 垂直方向位移
    */
   public translate(dx: number, dy: number): void {
-    const group: Group = this.get('group');
+    const group: IGroup = this.get('group');
 
     let matrix: Matrix = clone(group.getMatrix());
     if (!matrix) {
@@ -584,7 +576,7 @@ export default class Graph extends EventEmitter implements IGraph {
    * @param {number} y 垂直坐标
    */
   public moveTo(x: number, y: number): void {
-    const group: Group = this.get('group');
+    const group: IGroup = this.get('group');
     move(group, { x, y });
     this.emit('viewportchange', { action: 'move', matrix: group.getMatrix() });
   }
@@ -649,7 +641,7 @@ export default class Graph extends EventEmitter implements IGraph {
    * @param center 以center的x, y坐标为中心缩放
    */
   public zoom(ratio: number, center?: Point): void {
-    const group: Group = this.get('group');
+    const group: IGroup = this.get('group');
     let matrix: Matrix = clone(group.getMatrix());
     const minZoom: number = this.get('minZoom');
     const maxZoom: number = this.get('maxZoom');
