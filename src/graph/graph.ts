@@ -2623,7 +2623,10 @@ export default class Graph extends EventEmitter implements IGraph {
   /**
    * 获取 undo 和 redo 栈的数据
    */
-  public getStackData() {
+  public getStackData(): {
+    undoStack: GraphData[];
+    redoStack: GraphData[]
+  } {
     return {
       undoStack: this.undoStack.toArray(),
       redoStack: this.redoStack.toArray()
@@ -2649,6 +2652,11 @@ export default class Graph extends EventEmitter implements IGraph {
       action,
       data: stackData
     })
+
+    this.emit('stackchange', {
+      undoStack: this.undoStack,
+      redoStack: this.redoStack
+    })
   }
 
   /**
@@ -2657,15 +2665,23 @@ export default class Graph extends EventEmitter implements IGraph {
    * @param isNotExtend 是否不基于 G6 默认提供的 undo 扩展，默认基于 G6 提供的 undo 操作扩展
    */
   public undo(callback?: (type: string, data: unknown) => void, isNotExtend: boolean = false) {
-    if (!this.undoStack || this.undoStack.length === 0) {
+    if (!this.undoStack || this.undoStack.length === 1) {
       return
     }
 
-    const currentData = this.undoStack.pop()
+    let currentData = this.undoStack.pop()
     if (currentData) {
-      const { action, data } = currentData
-      this.redoStack.push(clone({ action, data }))
+      let { action, data } = currentData
+      if (action !== 'render') {
+        this.redoStack.push(clone({ action, data }))
+      }
 
+      // 还原上一个状态
+      currentData = this.undoStack.peek()
+      if (currentData) {
+        action = currentData.action
+        data = currentData.data
+      }
       if (isNotExtend) {
         callback && callback(action, data)
         return
@@ -2695,6 +2711,11 @@ export default class Graph extends EventEmitter implements IGraph {
           break;
       }
     }
+
+    this.emit('stackchange', {
+      undoStack: this.undoStack,
+      redoStack: this.redoStack
+    })
   }
 
   /**
@@ -2711,12 +2732,15 @@ export default class Graph extends EventEmitter implements IGraph {
     if (currentData) {
       let { action, data } = currentData
       this.pushStack(action, clone(data))
-      if (action === 'render') {
-        currentData = this.redoStack.pop()
-        action = currentData.action
-        data = currentData.data
-        this.pushStack(action, clone(data))
-      }
+      // if (action === 'render') {
+      //   currentData = this.redoStack.pop()
+      //   // 当 undoStack 中只有render一项时，此时再 pop currentData 为 undefined
+      //   if (currentData) {
+      //     action = currentData.action
+      //     data = currentData.data
+      //     this.pushStack(action, clone(data))
+      //   }
+      // }
 
       if (isNotExtend) {
         callback && callback(action, data)
@@ -2747,6 +2771,11 @@ export default class Graph extends EventEmitter implements IGraph {
           break;
       }
     }
+
+    this.emit('stackchange', {
+      undoStack: this.undoStack,
+      redoStack: this.redoStack
+    })
   }
 
   /**

@@ -476,6 +476,14 @@ export interface IGraph extends EventEmitter {
   updateCombos(): void;
 
   /**
+   * 获取 stack 数据
+   */
+  getStackData(): {
+    undoStack: GraphData[];
+    redoStack: GraphData[]
+  };
+
+  /**
    * 清空 undo stack & redo stack
    */
   clearStack(): void;
